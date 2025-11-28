@@ -13,10 +13,17 @@ import AssignmentRoutes from "./Kambaz/Assignments/routes.js";
 
 const app = express();
 
+// Support multiple CLIENT_URLs separated by comma
+const getAllowedOrigins = () => {
+  const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+  // Split by comma and trim whitespace
+  return clientUrl.split(",").map((url) => url.trim());
+};
+
 app.use(
   cors({
     credentials: true,
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: getAllowedOrigins(),
   })
 );
 
