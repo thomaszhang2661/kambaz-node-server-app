@@ -1,0 +1,29 @@
+{
+  "name": "kambaz-node-server-app",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Node.js HTTP Web server for the Kambaz application (Lab 5)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "lab5"
+  ],
+  "author": "generated",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "uuid": "^9.0.0",
+    "express-session": "^1.17.3",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
