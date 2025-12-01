@@ -2,7 +2,6 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import session from "express-session";
-import mongoose from "mongoose";
 
 import db from "./Kambaz/Database/index.js";
 import UserRoutes from "./Kambaz/Users/routes.js";
@@ -13,17 +12,36 @@ import AssignmentRoutes from "./Kambaz/Assignments/routes.js";
 
 const app = express();
 
-// Support multiple CLIENT_URLs separated by comma
-const getAllowedOrigins = () => {
-  const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
-  // Split by comma and trim whitespace
-  return clientUrl.split(",").map((url) => url.trim());
-};
+// Allow multiple origins for CORS
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://kambaz-next-js-cs5610-fa25-05.vercel.app",
+  "https://kambaz-next-js-cs5610-fa25-05-git-a5-thomas-projects-866f7e96.vercel.app",
+];
+
+// Add CLIENT_URL from environment if provided
+if (process.env.CLIENT_URL) {
+  allowedOrigins.push(process.env.CLIENT_URL);
+}
 
 app.use(
   cors({
     credentials: true,
-    origin: getAllowedOrigins(),
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      // Check if origin is in allowed list or matches Vercel preview URL pattern
+      if (
+        allowedOrigins.indexOf(origin) !== -1 ||
+        origin.includes("kambaz-next-js-cs5610-fa25-05") ||
+        origin.includes("vercel.app")
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
   })
 );
 
@@ -53,11 +71,11 @@ app.use(express.json());
 // NOTE: debug route removed - use /api/users/profile for session checks
 
 // register routes (after cors, session, json)
-UserRoutes(app);
-CourseRoutes(app);
-ModulesRoutes(app);
-EnrollmentsRoutes(app);
-AssignmentRoutes(app);
+UserRoutes(app, db);
+CourseRoutes(app, db);
+ModulesRoutes(app, db);
+EnrollmentsRoutes(app, db);
+AssignmentRoutes(app, db);
 
 // Dynamic import to avoid potential ESM resolution issues on some filesystems
 try {
@@ -71,25 +89,6 @@ try {
 } catch (err) {
   console.error("Failed to import Lab5 module:", err);
 }
-
-const CONNECTION_STRING =
-  process.env.DATABASE_CONNECTION_STRING || "mongodb://127.0.0.1:27017/kambaz";
-
-// Connect to MongoDB first, then start the server
-try {
-  await mongoose.connect(CONNECTION_STRING, {
-    // useNewUrlParser and useUnifiedTopology are defaults in mongoose v6+
-  });
-  console.log("Connected to MongoDB");
-} catch (err) {
-  console.error("Failed to connect to MongoDB:", err);
-  // continue starting the server even if DB connection fails locally;
-  // many routes still may work against the in-memory/file DB fallback.
-}
-
-mongoose.connection.on("error", (err) => {
-  console.error("MongoDB connection error:", err);
-});
 
 const PORT = process.env.PORT || 4000;
 
