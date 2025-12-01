@@ -30,7 +30,7 @@ app.use(
     origin: function (origin, callback) {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
-      
+
       // Check if origin is in allowed list or matches Vercel preview URL pattern
       if (
         allowedOrigins.indexOf(origin) !== -1 ||

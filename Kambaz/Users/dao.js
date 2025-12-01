@@ -1,20 +1,24 @@
-import model from "./model.js";
 import { v4 as uuidv4 } from "uuid";
 
 export default function UsersDao(db) {
   const createUser = (user) => {
     const newUser = { ...user, _id: uuidv4() };
-    return model.create(newUser);
+    db.users = [...(db.users || []), newUser];
+    return newUser;
   };
-  const findAllUsers = () => model.find();
-  const findUserById = (userId) => model.findById(userId);
+  const findAllUsers = () => db.users || [];
+  const findUserById = (userId) =>
+    (db.users || []).find((user) => user._id === userId);
   const findUserByUsername = (username) =>
-    model.findOne({ username: username });
+    (db.users || []).find((user) => user.username === username);
   const findUserByCredentials = (username, password) =>
-    model.findOne({ username, password });
+    (db.users || []).find(
+      (user) => user.username === username && user.password === password
+    );
   const updateUser = (userId, user) =>
-    model.updateOne({ _id: userId }, { $set: user });
-  const deleteUser = (userId) => model.findByIdAndDelete(userId);
+    (db.users = (db.users || []).map((u) => (u._id === userId ? user : u)));
+  const deleteUser = (userId) =>
+    (db.users = (db.users || []).filter((u) => u._id !== userId));
   return {
     createUser,
     findAllUsers,
