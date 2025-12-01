@@ -31,6 +31,6 @@ export default function ModulesRoutes(app, db) {
 
   app.get("/api/courses/:courseId/modules", findModulesForCourse);
   app.post("/api/courses/:courseId/modules", createModuleForCourse);
-  app.delete("/api/modules/:moduleId", deleteModule);
-  app.put("/api/modules/:moduleId", updateModule);
+  app.delete("/api/courses/:courseId/modules/:moduleId", deleteModule);
+  app.put("/api/courses/:courseId/modules/:moduleId", updateModule);
 }
