@@ -61,7 +61,7 @@ if (
   sessionOptions.cookie = {
     sameSite: "none",
     secure: true,
-    domain: process.env.SERVER_URL,
+    // Don't set domain - let browser handle cross-domain cookies
   };
 }
 
