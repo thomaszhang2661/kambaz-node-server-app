@@ -20,7 +20,22 @@ export default function QuizzesDao(db) {
 
   function createQuiz(quiz) {
     const _id = uuidv4();
-    const newQuiz = { ...quiz, _id, createdAt: new Date().toISOString() };
+    // Ensure each question and choice has an _id so answers can reliably reference them
+    const questions = (quiz.questions || []).map((q) => {
+      const qId = q._id || uuidv4();
+      const choices = (q.choices || []).map((c) => ({
+        _id: c._id || uuidv4(),
+        text: c.text,
+        isCorrect: !!c.isCorrect,
+      }));
+      return { ...q, _id: qId, choices };
+    });
+    const newQuiz = {
+      ...quiz,
+      _id,
+      questions,
+      createdAt: new Date().toISOString(),
+    };
     if (isConnected()) return QuizModel.create(newQuiz);
     db.quizzes.push(newQuiz);
     return Promise.resolve(newQuiz);
@@ -34,6 +49,18 @@ export default function QuizzesDao(db) {
   }
 
   function updateQuiz(id, updates) {
+    // When updating, if questions are provided ensure they have ids
+    if (updates && updates.questions) {
+      updates.questions = (updates.questions || []).map((q) => {
+        const qId = q._id || uuidv4();
+        const choices = (q.choices || []).map((c) => ({
+          _id: c._id || uuidv4(),
+          text: c.text,
+          isCorrect: !!c.isCorrect,
+        }));
+        return { ...q, _id: qId, choices };
+      });
+    }
     if (isConnected())
       return QuizModel.updateOne({ _id: id }, { $set: updates });
     const idx = (db.quizzes || []).findIndex((q) => q._id === id);
@@ -52,12 +79,50 @@ export default function QuizzesDao(db) {
     return Promise.resolve({ deletedCount: before - after });
   }
 
-  async function publishQuiz(id) {
-    return updateQuiz(id, { published: true });
+  async function publishQuiz(id, userId) {
+    const payload = {
+      published: true,
+      publishedBy: userId || null,
+      publishedAt: new Date().toISOString(),
+      unpublishedBy: null,
+      unpublishedAt: null,
+    };
+    if (isConnected()) {
+      // return the updated document
+      return QuizModel.findOneAndUpdate(
+        { _id: id },
+        { $set: payload },
+        { returnDocument: "after" }
+      );
+    }
+    // in-memory fallback
+    const idx = (db.quizzes || []).findIndex((q) => q._id === id);
+    if (idx >= 0) {
+      db.quizzes[idx] = { ...db.quizzes[idx], ...payload };
+      return Promise.resolve(db.quizzes[idx]);
+    }
+    return Promise.resolve(null);
   }
 
-  async function unpublishQuiz(id) {
-    return updateQuiz(id, { published: false });
+  async function unpublishQuiz(id, userId) {
+    const payload = {
+      published: false,
+      unpublishedBy: userId || null,
+      unpublishedAt: new Date().toISOString(),
+    };
+    if (isConnected()) {
+      return QuizModel.findOneAndUpdate(
+        { _id: id },
+        { $set: payload },
+        { returnDocument: "after" }
+      );
+    }
+    const idx = (db.quizzes || []).findIndex((q) => q._id === id);
+    if (idx >= 0) {
+      db.quizzes[idx] = { ...db.quizzes[idx], ...payload };
+      return Promise.resolve(db.quizzes[idx]);
+    }
+    return Promise.resolve(null);
   }
 
   async function createAttempt(attempt) {
