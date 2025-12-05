@@ -3,7 +3,7 @@ import EnrollmentsDao from "./dao.js";
 export default function EnrollmentsRoutes(app, db) {
   const dao = EnrollmentsDao(db);
 
-  const enrollCurrentUser = (req, res) => {
+  const enrollCurrentUser = async (req, res) => {
     const currentUser = req.session ? req.session["currentUser"] : null;
     if (!currentUser) {
       res.sendStatus(401);
@@ -14,11 +14,11 @@ export default function EnrollmentsRoutes(app, db) {
       res.status(400).json({ message: "Missing courseId" });
       return;
     }
-    dao.enrollUserInCourse(currentUser._id, courseId);
+    await dao.enrollUserInCourse(currentUser._id, courseId);
     res.sendStatus(200);
   };
 
-  const unenrollCurrentUser = (req, res) => {
+  const unenrollCurrentUser = async (req, res) => {
     const currentUser = req.session ? req.session["currentUser"] : null;
     if (!currentUser) {
       res.sendStatus(401);
@@ -29,7 +29,7 @@ export default function EnrollmentsRoutes(app, db) {
       res.status(400).json({ message: "Missing courseId" });
       return;
     }
-    dao.unenrollUserFromCourse(currentUser._id, courseId);
+    await dao.unenrollUserFromCourse(currentUser._id, courseId);
     res.sendStatus(200);
   };
 
@@ -37,23 +37,23 @@ export default function EnrollmentsRoutes(app, db) {
   app.delete("/api/users/current/enrollments/:courseId", unenrollCurrentUser);
 
   // Admin-style endpoints to enroll/unenroll any user by id for a given course
-  const enrollUserById = (req, res) => {
+  const enrollUserById = async (req, res) => {
     const { courseId, userId } = req.params;
     if (!courseId || !userId) {
       res.status(400).json({ message: "Missing courseId or userId" });
       return;
     }
-    dao.enrollUserInCourse(userId, courseId);
+    await dao.enrollUserInCourse(userId, courseId);
     res.sendStatus(200);
   };
 
-  const unenrollUserById = (req, res) => {
+  const unenrollUserById = async (req, res) => {
     const { courseId, userId } = req.params;
     if (!courseId || !userId) {
       res.status(400).json({ message: "Missing courseId or userId" });
       return;
     }
-    dao.unenrollUserFromCourse(userId, courseId);
+    await dao.unenrollUserFromCourse(userId, courseId);
     res.sendStatus(200);
   };
 
