@@ -58,8 +58,10 @@ export default function CourseRoutes(app, db) {
 
   const findPeopleForCourse = async (req, res) => {
     const { courseId } = req.params;
+    console.log("findPeopleForCourse called with courseId:", courseId);
     if (enrollmentsDao && enrollmentsDao.findUsersForCourse) {
       const users = await enrollmentsDao.findUsersForCourse(courseId);
+      console.log("Found", users.length, "users for course", courseId);
       res.json(users);
       return;
     }
