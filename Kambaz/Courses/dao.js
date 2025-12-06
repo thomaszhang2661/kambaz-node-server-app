@@ -33,8 +33,10 @@ export default function CoursesDao(db) {
     return model.deleteOne({ _id: courseId });
   }
 
-  function updateCourse(courseId, courseUpdates) {
-    return model.updateOne({ _id: courseId }, { $set: courseUpdates });
+  async function updateCourse(courseId, courseUpdates) {
+    await model.updateOne({ _id: courseId }, { $set: courseUpdates });
+    // Return the updated course
+    return model.findOne({ _id: courseId });
   }
 
   return {
