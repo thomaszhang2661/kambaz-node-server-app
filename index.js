@@ -32,6 +32,12 @@ const sessionOptions = {
   resave: false,
   saveUninitialized: false,
 };
+
+// Log environment for debugging
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("SERVER_ENV:", process.env.SERVER_ENV);
+console.log("CLIENT_URL:", process.env.CLIENT_URL);
+
 // In development, allow saveUninitialized to ensure cookie is set for CLI testing
 if (
   process.env.SERVER_ENV === "development" ||
@@ -43,9 +49,13 @@ if (
   sessionOptions.cookie = {
     sameSite: "none",
     secure: true,
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24, // 24 hours
     // Do NOT set domain - let browser handle it automatically for cross-origin cookies
   };
 }
+
+console.log("Session options:", JSON.stringify(sessionOptions, null, 2));
 
 app.use(session(sessionOptions));
 app.use(express.json());
