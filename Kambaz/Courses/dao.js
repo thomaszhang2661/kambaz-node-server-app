@@ -3,15 +3,15 @@ import model from "./model.js";
 
 export default function CoursesDao(db) {
   function findAllCourses() {
-    // only return name and description for dashboard
-    return model.find({}, { name: 1, description: 1 });
+    // Return all fields for dashboard display
+    return model.find({});
   }
 
   async function findCoursesForEnrolledUser(userId) {
     // If a legacy in-memory enrollments exists use it, otherwise expect an
     // enrollments DAO to be used at the routes level.
     if (db && db.enrollments) {
-      const courses = await model.find({}, { name: 1, description: 1 });
+      const courses = await model.find({});
       const enrolledCourses = courses.filter((course) =>
         (db.enrollments || []).some(
           (enrollment) =>
@@ -21,7 +21,7 @@ export default function CoursesDao(db) {
       return enrolledCourses;
     }
     // Fallback: return all courses (caller may use enrollments DAO instead)
-    return model.find({}, { name: 1, description: 1 });
+    return model.find({});
   }
 
   function createCourse(course) {
