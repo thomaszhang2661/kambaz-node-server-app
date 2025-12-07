@@ -2,14 +2,12 @@ import model from "./model.js";
 export default function EnrollmentsDao(db) {
   async function findCoursesForUser(userId) {
     const enrollments = await model.find({ user: userId }).populate("course");
-    // Filter out null courses (in case course was deleted)
-    return enrollments.map((enrollment) => enrollment.course).filter(Boolean);
+    return enrollments.map((enrollment) => enrollment.course);
   }
 
   async function findUsersForCourse(courseId) {
     const enrollments = await model.find({ course: courseId }).populate("user");
-    // Filter out null users (in case user was deleted)
-    return enrollments.map((enrollment) => enrollment.user).filter(Boolean);
+    return enrollments.map((enrollment) => enrollment.user);
   }
 
   function enrollUserInCourse(userId, courseId) {

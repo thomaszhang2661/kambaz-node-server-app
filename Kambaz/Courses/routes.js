@@ -52,8 +52,8 @@ export default function CourseRoutes(app, db) {
   const updateCourse = async (req, res) => {
     const { courseId } = req.params;
     const courseUpdates = req.body;
-    const updatedCourse = await dao.updateCourse(courseId, courseUpdates);
-    res.json(updatedCourse);
+    const status = await dao.updateCourse(courseId, courseUpdates);
+    res.send(status);
   };
 
   const findPeopleForCourse = async (req, res) => {

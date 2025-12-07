@@ -1,5 +1,4 @@
 import model from "./model.js";
-import { v4 as uuidv4 } from "uuid";
 
 // Find all assignments for a specific course
 export const findAssignmentsForCourse = (courseId) =>
@@ -11,8 +10,8 @@ export const findAssignmentById = (assignmentId) =>
 
 // Create a new assignment
 export const createAssignment = (assignment) => {
-  const newAssignment = { ...assignment, _id: uuidv4() };
-  return model.create(newAssignment);
+  delete assignment._id; // Let MongoDB generate the ID
+  return model.create(assignment);
 };
 
 // Update an assignment
