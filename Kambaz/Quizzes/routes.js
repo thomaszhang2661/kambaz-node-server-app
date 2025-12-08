@@ -47,16 +47,27 @@ export default function QuizzesRoutes(app, db) {
    * GET quiz by id
    * Students cannot see unpublished quizzes
    */
-  const getQuizById = async (req, res) => {
-    const { qid } = req.params;
-    const quiz = await dao.findQuizById(qid);
-    if (!quiz) return res.sendStatus(404);
-    const current = req.session.currentUser;
-    if (!quiz.published && current && current.role !== "FACULTY") {
+const getQuizById = async (req, res) => {
+  const quiz = await dao.findQuizById(qid);
+  if (!quiz) return res.sendStatus(404);
+  
+  const current = req.session.currentUser;
+  
+  // 测验未发布
+  if (!quiz.published) {
+    // 未登录
+    if (!current) {
+      return res.status(401).json({ error: "未登录" });
+    }
+    // 不是教师
+    if (current.role !== "FACULTY") {
       return res.status(403).json({ error: "Quiz not published" });
     }
-    res.json(quiz);
-  };
+  }
+  
+  // 允许访问
+  res.json(quiz);
+};
 
   /**
    * PUT update quiz (faculty only)
