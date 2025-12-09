@@ -4,17 +4,29 @@ import QuizModel from "./model.js";
 import AttemptModel from "./attemptModel.js";
 
 export default function QuizzesDao(db) {
-  // Fallback in-memory arrays when MongoDB is not connected
   db.quizzes = db.quizzes || [];
   db.quizAttempts = db.quizAttempts || [];
 
   const isConnected = () =>
     mongoose.connection && mongoose.connection.readyState === 1;
 
+  // async function findQuizzesForCourse(courseId) {
+  //   if (isConnected()) return QuizModel.find({ course: courseId });
+  //   return Promise.resolve(
+  //     (db.quizzes || []).filter((q) => q.course === courseId)
+  //   );
+  // }
   async function findQuizzesForCourse(courseId) {
-    if (isConnected()) return QuizModel.find({ course: courseId });
+    if (isConnected()) return QuizModel.find({ course: courseId }).sort({ availableDate: 1 });
     return Promise.resolve(
-      (db.quizzes || []).filter((q) => q.course === courseId)
+      (db.quizzes || [])
+        .filter((q) => q.course === courseId)
+        .sort((a, b) => {
+          if (!a.availableDate && !b.availableDate) return 0;
+          if (!a.availableDate) return 1;
+          if (!b.availableDate) return -1;
+          return a.availableDate.localeCompare(b.availableDate);
+        })
     );
   }
 
