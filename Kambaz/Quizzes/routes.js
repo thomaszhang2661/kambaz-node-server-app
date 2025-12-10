@@ -150,30 +150,31 @@ export default function QuizzesRoutes(app, db) {
       const given = answers.find((a) => a.questionId === q._id);
       if (!given) continue;
 
-      if (q.type === "mcq") {
+      if (q.type === "mcq" || q.type === "tf") {
+        // Both MCQ and TF use choice._id to identify the selected answer
         const correct = (q.choices || []).find((c) => c.isCorrect);
         if (correct && given.answer === correct._id) score += q.points || 0;
-      } else if (q.type === "tf") {
-        const correct = (q.choices || []).find((c) => c.isCorrect);
-        if (correct) {
-          const correctBool =
-            String(correct._id) === "true" || correct._id === true;
-          if ((given.answer === true || given.answer === "true") && correctBool)
-            score += q.points || 0;
-        }
       } else if (q.type === "fill") {
+        // Fill-in-blank: given.answer is an object { blankId: "userAnswer" }
         const blanks = q.blanks || [];
-        for (const b of blanks) {
-          const ok = (b.answers || []).some(
-            (ans) =>
-              ans.toLowerCase().trim() ===
-              String(given.answer || "")
-                .toLowerCase()
-                .trim()
-          );
-          if (ok) {
+        if (blanks.length > 0) {
+          let allBlanksCorrect = true;
+          for (const b of blanks) {
+            const userBlankAnswer = given.answer?.[b._id];
+            const isBlankCorrect = (b.answers || []).some(
+              (ans) =>
+                ans.toLowerCase().trim() ===
+                String(userBlankAnswer || "")
+                  .toLowerCase()
+                  .trim()
+            );
+            if (!isBlankCorrect) {
+              allBlanksCorrect = false;
+              break;
+            }
+          }
+          if (allBlanksCorrect) {
             score += q.points || 0;
-            break;
           }
         }
       }
